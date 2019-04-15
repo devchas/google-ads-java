@@ -18,7 +18,7 @@ This project hosts the Java client library for the Google Ads API.
     <dependency>
       <groupId>com.google.api-ads</groupId>
       <artifactId>google-ads</artifactId>
-      <version>0.6.0</version>
+      <version>1.1.0</version>
     </dependency>
 
 ## Getting started
@@ -122,8 +122,8 @@ This project hosts the Java client library for the Google Ads API.
 
         ```
         $ cd google-ads-java
-        $ mvn -f google-ads-examples/pom.xml
-        $ mvn exec:java -Dexec.mainClass="com.google.ads.googleads.examples.authentication.AuthenticateInWebApplication"
+        $ mvn clean install
+        $ mvn -f google-ads-examples/pom.xml exec:java -Dexec.mainClass="com.google.ads.googleads.examples.authentication.AuthenticateInWebApplication"
         ```
 
     *   Copy the output from the last step of the example into a file named
@@ -208,9 +208,10 @@ If your configuration file is not in your home directory, you can pass the
 file location to the `fromPropertiesFile` method as follows:
 
 ```java
+File propertiesFile = new File("/path/to/ads.properties"); 
 GoogleAdsClient googleAdsClient =
     GoogleAdsClient.newBuilder()
-        .fromPropertiesFile("/path/to/ads.properties").build();
+        .fromPropertiesFile(propertiesFile).build();
 ```
 
 You can also construct a `Credentials` object by specifying the client ID,

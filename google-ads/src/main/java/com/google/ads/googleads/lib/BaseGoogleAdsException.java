@@ -39,7 +39,8 @@ public abstract class BaseGoogleAdsException extends ApiException {
   /** Create from ApiException, GoogleAdsFailure (as Message) and metadata. */
   public <T extends Message> BaseGoogleAdsException(
       ApiException original, T failure, Metadata metadata) {
-    super(original.getCause(), original.getStatusCode(), original.isRetryable());
+    super(
+        failure.toString(), original.getCause(), original.getStatusCode(), original.isRetryable());
     this.metadata = metadata;
     this.failure = failure;
   }
@@ -80,6 +81,10 @@ public abstract class BaseGoogleAdsException extends ApiException {
    * <p>Returns an empty Optional if the required metadata is not present or is not parsable.
    */
   public abstract static class Factory<T extends BaseGoogleAdsException, U extends Message> {
+    protected static Metadata.Key<byte[]> createKey(String trailerKey) {
+      return Metadata.Key.of(trailerKey, Metadata.BINARY_BYTE_MARSHALLER);
+    }
+
     public Optional<T> createGoogleAdsException(ApiException source) {
       if (source == null) {
         return Optional.empty();
@@ -104,8 +109,7 @@ public abstract class BaseGoogleAdsException extends ApiException {
       }
     }
 
-    protected abstract T createException(
-        ApiException source, byte[] protoData, Metadata metadata)
+    protected abstract T createException(ApiException source, byte[] protoData, Metadata metadata)
         throws InvalidProtocolBufferException;
 
     /**
@@ -116,10 +120,9 @@ public abstract class BaseGoogleAdsException extends ApiException {
 
     /** Create an empty GoogleAdsFailure instance for this version. */
     @VisibleForTesting
-    public abstract U createDefaultFailure();
+    public abstract U createGoogleAdsFailure();
 
-    protected static Metadata.Key<byte[]> createKey(String trailerKey) {
-      return Metadata.Key.of(trailerKey, Metadata.BINARY_BYTE_MARSHALLER);
-    }
+    public abstract U createGoogleAdsFailure(byte[] serializedBytes)
+        throws InvalidProtocolBufferException;
   }
 }
