@@ -1,3 +1,7 @@
+1.2.0 - 2019-04-15
+------------------
+- Running a test release
+
 1.1.0 - 2019-03-29
 ------------------
 - Added support for Google Ads API v1_1.
