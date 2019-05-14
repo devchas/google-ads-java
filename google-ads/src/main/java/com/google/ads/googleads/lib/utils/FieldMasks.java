@@ -15,12 +15,16 @@
 package com.google.ads.googleads.lib.utils;
 
 import com.google.common.base.Preconditions;
+import com.google.protobuf.DescriptorProtos.OneofDescriptorProtoOrBuilder;
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor.Type;
+import com.google.protobuf.Descriptors.OneofDescriptor;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.Message;
+
+import java.util.List;
 import java.util.Objects;
 
 /** Utility methods for working with field masks. */
@@ -130,6 +134,14 @@ public class FieldMasks {
     }
   }
 
+  private static String getOneOfName(String currentField, OneofDescriptor oneofDescriptor) {
+    if (currentField.isEmpty()) {
+      return oneofDescriptor.getName();
+    } else {
+      return currentField + "." + oneofDescriptor.getName();
+    }
+  }
+
   /**
    * Recursively add field names for a new message. Repeated fields, primitive fields and
    * unpopulated single message fields are included just by name; populated single message fields
@@ -149,6 +161,17 @@ public class FieldMasks {
           Message value = (Message) message.getField(field);
           addNewFields(mask, name, value);
         } else {
+          // Adds the field to the paths only if it is in the new message
+          if (!field.isRepeated() && message.hasField(field)) {
+            mask.addPaths(name);
+          }
+        }
+      }
+      // Tests the OneofDescriptors present in the descriptor
+      for (OneofDescriptor oneofDescriptor : descriptor.getOneofs()) {
+        String name = getOneOfName(currentField, oneofDescriptor);
+        // Adds the one of descriptor only if it the message contains at least one instance
+        if (message.hasOneof(oneofDescriptor)) {
           mask.addPaths(name);
         }
       }

@@ -17,9 +17,13 @@ package com.google.ads.googleads.lib.utils;
 import com.google.ads.googleads.test.Resource;
 import com.google.ads.googleads.test.TestCase;
 import com.google.ads.googleads.test.TestSuite;
+import com.google.ads.googleads.v1.common.ExpandedTextAdInfo;
+import com.google.ads.googleads.v1.resources.Ad;
+import com.google.ads.googleads.v1.resources.AdGroupAd;
 import com.google.common.base.Charsets;
 import com.google.common.truth.Truth;
 import com.google.protobuf.FieldMask;
+import com.google.protobuf.StringValue;
 import com.google.protobuf.TextFormat;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,6 +35,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests the {@link FieldMasks} utility.
@@ -72,5 +78,24 @@ public class FieldMasksTest {
     FieldMask actual = FieldMasks.allSetFieldsOf(resource);
     FieldMask expected = FieldMasks.compare(resource.getDefaultInstanceForType(), resource);
     Truth.assertThat(expected).isEqualTo(actual);
+  }
+
+  @Test
+  public void testFieldMaskOfNestedResource() {
+    Ad ad = Ad.newBuilder()
+      .setName(StringValue.of("Test Name"))
+      .setExpandedTextAd(ExpandedTextAdInfo.newBuilder()
+        .setDescription(StringValue.of("Test Description"))
+        .build())
+      .addFinalUrls(StringValue.of("http://www.example.com/cruise/space/"))
+      .build();
+
+    AdGroupAd adGroupAd = AdGroupAd.newBuilder()
+      .setResourceName("Resource Name")
+      .setAd(ad)
+      .build();
+
+    FieldMask actual = FieldMasks.allSetFieldsOf(adGroupAd);
+    assertEquals(4, actual.getPathsCount());
   }
 }
