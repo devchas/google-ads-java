@@ -242,7 +242,7 @@ public class MerchantCenterDynamicRemarketing {
     GoogleAdsClient googleAdsClient,
     long customerId,
     String adGroupResourceName) throws IOException {
-    String marketingImageUrl = "https://goo.gl/3b9Wfh";
+    String marketingImageUrl = "https://cdn.vox-cdn.com/thumbor/Pkmq1nm3skO0-j693JTMd7RL0Zk=/0x0:2012x1341/1200x800/filters:focal(0x0:2012x1341)/cdn.vox-cdn.com/uploads/chorus_image/image/47070706/google2.0.0.jpg";
     String marketingImageName = "Marketing Image";
     String marketingImageResourceName =
       uploadAsset(googleAdsClient, customerId, marketingImageUrl, marketingImageName);
@@ -257,7 +257,7 @@ public class MerchantCenterDynamicRemarketing {
         .setAsset(StringValue.of(marketingImageResourceName))
         .build())
       .addSquareMarketingImages(AdImageAsset.newBuilder()
-        .setAsset(StringValue.of(marketingImageResourceName))
+        .setAsset(StringValue.of(logoImageResourceName))
         .build())
       .addHeadlines(AdTextAsset.newBuilder().setText(StringValue.of("Travel")).build())
       .setLongHeadline(
@@ -269,11 +269,11 @@ public class MerchantCenterDynamicRemarketing {
       // Valid texts: https://support.google.com/adwords/answer/7005917
       .setCallToActionText(StringValue.of("Apply Now"))
       // Optional: Creates a logo image and set it to the ad.
-      .addLogoImages(
-        AdImageAsset.newBuilder().setAsset(StringValue.of(logoImageResourceName)).build())
+//      .addLogoImages(
+//        AdImageAsset.newBuilder().setAsset(StringValue.of(logoImageResourceName)).build())
       // Optional: Creates a logo image and set it to the ad.
-      .addSquareLogoImages(
-        AdImageAsset.newBuilder().setAsset(StringValue.of(logoImageResourceName)).build())
+//      .addSquareLogoImages(
+//        AdImageAsset.newBuilder().setAsset(StringValue.of(logoImageResourceName)).build())
       // Whitelisted accounts only: Sets color settings using hexadecimal values.
       // Sets allowFlexibleColor to false if you want your ads to render by always
       // using your colors strictly.

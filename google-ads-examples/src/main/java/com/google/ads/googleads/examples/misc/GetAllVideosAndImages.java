@@ -18,14 +18,27 @@ import com.beust.jcommander.Parameter;
 import com.google.ads.googleads.examples.utils.ArgumentNames;
 import com.google.ads.googleads.examples.utils.CodeSampleParams;
 import com.google.ads.googleads.lib.GoogleAdsClient;
+import com.google.ads.googleads.v1.common.ImageAsset;
 import com.google.ads.googleads.v1.errors.GoogleAdsException;
 import com.google.ads.googleads.v1.errors.GoogleAdsError;
+import com.google.ads.googleads.v1.resources.Asset;
+import com.google.ads.googleads.v1.services.AssetOperation;
 import com.google.ads.googleads.v1.services.GoogleAdsRow;
 import com.google.ads.googleads.v1.services.GoogleAdsServiceClient;
 import com.google.ads.googleads.v1.services.GoogleAdsServiceClient.SearchPagedResponse;
 import com.google.ads.googleads.v1.services.SearchGoogleAdsRequest;
+import com.google.ads.googleads.v1.utils.ResourceNames;
+import com.google.common.io.ByteStreams;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.BytesValue;
+import com.google.protobuf.StringValue;
+
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /** This example gets all video and image files. */
 public class GetAllVideosAndImages {
@@ -91,8 +104,8 @@ public class GetAllVideosAndImages {
         SearchGoogleAdsRequest.newBuilder()
           .setCustomerId(Long.toString(customerId))
           .setPageSize(PAGE_SIZE)
-          .setQuery("SELECT media_file.id, media_file.name, media_file.type " +
-            "FROM media_file ORDER BY media_file.id")
+          .setQuery("SELECT asset.id, asset.name, asset.type " +
+            "FROM asset ORDER BY asset.id")
           .build();
       // Issues the search request.
       SearchPagedResponse searchPagedResponse = googleAdsServiceClient.search(request);
@@ -100,11 +113,33 @@ public class GetAllVideosAndImages {
       // in each row.
       for (GoogleAdsRow googleAdsRow : searchPagedResponse.iterateAll()) {
         System.out.printf(
-          "Media file with ID %d, name '%s', and type '%s' was found.%n",
-          googleAdsRow.getMediaFile().getId().getValue(),
-          googleAdsRow.getMediaFile().getName().getValue(),
-          googleAdsRow.getMediaFile().getType());
+          "Asset with ID %d, name '%s', and type '%s' was found.%n",
+          googleAdsRow.getAsset().getId().getValue(),
+          googleAdsRow.getAsset().getName().getValue(),
+          googleAdsRow.getAsset().getType());
       }
+    }
+  }
+
+
+  private void removeAssets(GoogleAdsClient googleAdsClient, long customerId, List<Long>
+    assetIds) throws MalformedURLException, IOException {
+    List<AssetOperation> operations = new ArrayList<>();
+
+    String imageUrl = "https://lh3.googleusercontent" +
+      ".com/lq9kbsdj9-eMYfu1x8um61NqD_c99Ad1kq9E-pHUiS9I2KTbK_kWGSTiiYJB2o2HlarNIs09u_hbSPn4ISfqvV8F0H7x95Z_RjDt=w300";
+    byte[] imageData = ByteStreams.toByteArray(new URL(imageUrl).openStream());
+
+    for (long assetId : assetIds) {
+      String assetResName = ResourceNames.asset(customerId, assetId);
+      Asset asset = Asset.newBuilder()
+        .setResourceName(assetResName)
+        .setImageAsset(ImageAsset.newBuilder()
+          .setData(BytesValue.of(ByteString.copyFrom(imageData)))
+          .build())
+        .build();
+
+//      AssetOperation operation = AssetOperation.newBuilder().set
     }
   }
 }
