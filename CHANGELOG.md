@@ -1,3 +1,7 @@
+4.0.1 - 2019-07-01
+------------------
+- This is just a test.
+
 4.0.0 - 2019-07-01
 ------------------
 - Added support for Google Ads API v2_0.
