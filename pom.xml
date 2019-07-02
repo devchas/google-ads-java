@@ -53,7 +53,7 @@
     <url>
       https://github.com/devchas/google-ads-java
     </url>
-    <tag>HEAD</tag>
+    <tag>rel-4.0.0</tag>
   </scm>
 
   <developers>
