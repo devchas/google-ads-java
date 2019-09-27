@@ -51,7 +51,7 @@
       scm:git:https://github.com/devchas/google-ads-java
     </developerConnection>
     <url>
-      https://github.com/googleads/google-ads-java
+      https://github.com/devchas/google-ads-java
     </url>
     <tag>HEAD</tag>
   </scm>
