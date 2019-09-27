@@ -45,10 +45,10 @@
 
   <scm>
     <connection>
-      scm:git:https://github.com/googleads/google-ads-java
+      scm:git:https://github.com/devchas/google-ads-java
     </connection>
     <developerConnection>
-      scm:git:https://github.com/googleads/google-ads-java
+      scm:git:https://github.com/devchas/google-ads-java
     </developerConnection>
     <url>
       https://github.com/googleads/google-ads-java
