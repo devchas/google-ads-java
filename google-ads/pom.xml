@@ -89,6 +89,11 @@
       <artifactId>slf4j-api</artifactId>
       <version>1.7.25</version>
     </dependency>
+    <dependency>
+      <groupId>com.squareup</groupId>
+      <artifactId>javapoet</artifactId>
+      <version>1.11.1</version>
+    </dependency>
 
     <!-- Test dependencies -->
     <dependency>
@@ -175,6 +180,30 @@
               <sources>
                 <source>target/generated-test-sources</source>
               </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <executions>
+          <execution>
+            <phase>install</phase>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>com.google.ads.googleads.lib.autogen.GenCatalog</mainClass>
+              <arguments>
+                <!-- Latest production version -->
+                <argument>2</argument>
+                <!-- Number of production versions (excluding v999) -->
+                <argument>2</argument>
+                <!-- Include v999 -->
+                <argument>false</argument>
+              </arguments>
             </configuration>
           </execution>
         </executions>

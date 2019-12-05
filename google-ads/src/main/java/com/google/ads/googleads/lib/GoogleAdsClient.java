@@ -15,6 +15,7 @@
 package com.google.ads.googleads.lib;
 
 import com.google.ads.googleads.lib.catalog.ApiCatalog;
+import com.google.ads.googleads.lib.catalog.Primer;
 import com.google.ads.googleads.lib.logging.LoggingInterceptor;
 import com.google.ads.googleads.lib.logging.RequestLogger;
 import com.google.api.gax.grpc.InstantiatingGrpcChannelProvider;
@@ -281,6 +282,8 @@ public abstract class GoogleAdsClient extends AbstractGoogleAdsClient {
      * Returns a new instance of {@link GoogleAdsClient} based on the attributes of this builder.
      */
     public GoogleAdsClient build() {
+      Credentials credentials = getCredentials();
+      Primer.getInstance().primeCredentialsAsync(credentials);
       TransportChannelProvider transportChannelProvider = getTransportChannelProvider();
       if (transportChannelProvider.needsHeaders()) {
         transportChannelProvider = transportChannelProvider.withHeaders(getHeaders());
@@ -290,7 +293,7 @@ public abstract class GoogleAdsClient extends AbstractGoogleAdsClient {
       }
       setTransportChannelProvider(transportChannelProvider);
       setGoogleAdsAllVersions(
-          catalog.createAllVersionsClient(getTransportChannelProvider(), getCredentials()));
+          catalog.createAllVersionsClient(getTransportChannelProvider(), credentials));
       GoogleAdsClient provider = autoBuild();
       Long loginCustomerId = provider.getLoginCustomerId();
       Preconditions.checkArgument(

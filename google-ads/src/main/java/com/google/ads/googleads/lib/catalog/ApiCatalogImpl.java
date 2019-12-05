@@ -31,7 +31,7 @@ import java.util.TreeSet;
  * A basic catalog implementation which loads versions from @VersionDescriptor annotations and uses
  * reflection for the type factory.
  */
-class ApiCatalogImpl implements ApiCatalog {
+public class ApiCatalogImpl implements ApiCatalog {
   private static final ApiCatalogImpl instance =
       new ApiCatalogImpl(
           VersionDescriptorLoader.forVersionList(GoogleAdsAllVersions.class).getVersions());
