@@ -1,8 +1,9 @@
-package com.google.ads.googleads.lib.codegen;
+package com.google.ads.googleads.processor.factory.processor;
 
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.Credentials;
+import com.google.common.collect.ImmutableSortedSet;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -10,60 +11,104 @@ import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
 import javax.lang.model.element.Modifier;
+import javax.tools.Diagnostic;
 
-/** Dynamically generates the NoReflectionApiCatalog class. */
-public class GenCatalog {
+public class FactoryCollector {
 
-  public static void main(String[] args) {
-    if (args.length < 3) {
-      throw new IllegalArgumentException("Three arguments are required.");
-    }
+  private static HashMap<String, String> requiredClasses = new HashMap<String, String>();
+  private Messager messager;
+
+
+  public FactoryCollector(Messager messager) {
+    this.messager = messager;
+  }
+
+  public void addClassElement(AnnotatedClass annotatedClass) {
+    String id = annotatedClass.getId();
+    if (getElementClass(id) != null) { return; }
+    requiredClasses.put(id, annotatedClass.getQualifiedFactoryGroupName());
+  }
+
+  public static String getElementClass(String id) {
+    return requiredClasses.get(id);
+  }
+
+  public void generateCode(Filer filer) throws IOException {
+    String[] args = {"2", "2", "false"};
 
     List<Integer> versions = getVersions(args);
     int latestVersion = Integer.parseInt(args[0]);
 
     try {
-      FieldSpec instance = FieldSpec.builder(
-          Class.forName("com.google.ads.googleads.lib.catalog.ApiCatalog"), "instance")
+      FieldSpec instance = FieldSpec
+          .builder(Class.forName(getElementClass("ApiCatalog")), "instance")
           .addModifiers(Modifier.PRIVATE, Modifier.STATIC)
-          // TO DO: Update class name to 'NoReflectionApiCatalog()'
-          .initializer("new NoReflectionApiCatalog()")
+          .initializer("new NoReflectionApiCatalog($T.forVersionList($T.class).getVersions())",
+              getElementClass("VersionDescriptorLoader"),
+              getElementClass("GoogleAdsAllVersions"))
+          .build();
+
+      FieldSpec supportedVersions = FieldSpec
+          .builder(ParameterizedTypeName.get(
+              ImmutableSortedSet.class,
+              Class.forName(getElementClass("Version"))),
+             "supportedVersions")
+          .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+          .build();
+
+      MethodSpec constructor = MethodSpec.constructorBuilder()
+          .addModifiers(Modifier.PUBLIC)
+          .addParameter(ParameterizedTypeName.get(
+              ImmutableSortedSet.class,
+              Class.forName(getElementClass("Version"))),
+              "versions")
+          .addStatement("supportedVersions = $T.copyOf(new $T<>(versions))",
+              ImmutableSortedSet.class,
+              TreeSet.class)
+          .addJavadoc("Creates a new constant catalog from a known collection of versions")
           .build();
 
       MethodSpec getDefault = MethodSpec.methodBuilder("getDefault")
           .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-          .returns(Class.forName("com.google.ads.googleads.lib.catalog.ApiCatalog"))
+          .returns(Class.forName(getElementClass("ApiCatalog")))
           .addStatement("return instance")
           .build();
 
-      MethodSpec main = MethodSpec.constructorBuilder()
+      MethodSpec getSupportedVersions = MethodSpec.methodBuilder("getSupportedVersions")
           .addModifiers(Modifier.PUBLIC)
-          .addStatement("super($T.asList(new $T(\"v999\", new $T(), $T.class)))",
-              Arrays.class,
-              Class.forName("com.google.ads.googleads.lib.catalog.Version"),
-              Class.forName(
-                  "com.google.ads.googleads.v" + latestVersion + ".errors.GoogleAdsException.Factory"),
-              Class.forName(
-                  "com.google.ads.googleads.v" + latestVersion + ".services.GoogleAdsVersion"))
-          .addJavadoc("Creates a new constant catalog from a known collection of versions")
+          .returns(ParameterizedTypeName.get(
+              SortedSet.class,
+              Class.forName(getElementClass("Version"))))
+          .addStatement("return supportedVersions")
+          .build();
+
+      MethodSpec getLatestVersion = MethodSpec.methodBuilder("getLatestVersion")
+          .addModifiers(Modifier.PUBLIC)
+          .returns(Class.forName(getElementClass("Version")))
+          .addStatement("return getSupportedVersions().first()")
           .build();
 
       // Creates the createAllVersionsClient method.
       MethodSpec createAllVersionsClient = createAllVersionsClient(versions);
 
       // Creates the NoReflectionApiCatalog class.
-      // TO DO: update class name to 'NoReflectionApiCatalog'
       TypeSpec.Builder noReflectionApiCatalogBuilder = TypeSpec.classBuilder("NoReflectionApiCatalog")
           .addModifiers(Modifier.PUBLIC)
-          .superclass(com.google.ads.googleads.lib.catalog.ApiCatalogImpl.class)
+          .addSuperinterface(Class.forName(getElementClass("ApiCatalog")))
           .addField(instance)
+          .addField(supportedVersions)
+          .addMethod(constructor)
           .addMethod(getDefault)
-          .addMethod(main)
+          .addMethod(getSupportedVersions)
+          .addMethod(getLatestVersion)
           .addMethod(createAllVersionsClient);
 
       // Creates a version class for each version.
@@ -73,15 +118,15 @@ public class GenCatalog {
 
       TypeSpec noReflectionApiCatalog = noReflectionApiCatalogBuilder.build();
 
-      JavaFile javaFile = JavaFile.builder("com.google.ads.googleads.lib.catalog", noReflectionApiCatalog)
-          .build();
+      // Writes the file.
+      // JavaFile.builder(packageName, noReflectionApiCatalog).build().writeTo(filer);
+      JavaFile.builder("com.google.ads.googleads.lib.catalog", noReflectionApiCatalog).build().writeTo(filer);
 
-      javaFile.writeTo(Paths.get("./google-ads/src/main/java"));
     } catch (IOException ioe) {
-      System.err.printf("Failed to create file. Exception: %s%n", ioe);
+      messager.printMessage(Diagnostic.Kind.ERROR, "Failed to create file: " + ioe);
       return;
     } catch (ClassNotFoundException cnfe) {
-      System.err.printf("Failed to create class. Exception: %s%n", cnfe);
+      messager.printMessage(Diagnostic.Kind.ERROR, "Failed to create class: " + cnfe);
     }
   }
 
@@ -105,7 +150,8 @@ public class GenCatalog {
   /** Creates the createAllVersionsClient method. */
   private static MethodSpec createAllVersionsClient(List<Integer> versions) throws ClassNotFoundException {
     TypeSpec.Builder comparatorBuilder = TypeSpec.anonymousClassBuilder("")
-        .addSuperinterface(ParameterizedTypeName.get(Class.forName("com.google.ads.googleads.lib.GoogleAdsAllVersions")));
+        .addSuperinterface(ParameterizedTypeName.get(
+            Class.forName(getElementClass("GoogleAdsAllVersions"))));
 
     Integer latestVersion = null;
     for (Integer version : versions) {
@@ -131,7 +177,7 @@ public class GenCatalog {
         .addModifiers(Modifier.PUBLIC)
         .addAnnotation(Override.class)
         .addStatement("return $L", comparator)
-        .returns(Class.forName("com.google.ads.googleads.lib.GoogleAdsAllVersions"))
+        .returns(Class.forName(getElementClass("GoogleAdsAllVersions")))
         .addParameter(TransportChannelProvider.class, "provider")
         .addParameter(Credentials.class, "credentials")
         .build();

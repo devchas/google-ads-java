@@ -14,6 +14,12 @@
 
 package com.google.ads.googleads.lib;
 
+import com.google.ads.googleads.annotations.ReqClassFactory;
+
+@ReqClassFactory(
+    id = "GoogleAdsAllVersions",
+    type = GoogleAdsAllVersions.class
+)
 public interface GoogleAdsAllVersions {
   com.google.ads.googleads.v1.services.GoogleAdsVersion getVersion1();
 

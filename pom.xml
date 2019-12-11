@@ -224,6 +224,7 @@
       <modules>
         <module>google-ads-examples</module>
         <module>google-ads-migration-examples</module>
+        <module>annotation-processing</module>
       </modules>
     </profile>
     <profile>

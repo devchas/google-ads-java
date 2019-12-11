@@ -1,7 +1,6 @@
 package com.google.ads.googleads.lib.catalog;
 
 import com.google.ads.googleads.lib.GoogleAdsAllVersions;
-import com.google.ads.googleads.v2.errors.GoogleAdsException;
 import com.google.ads.googleads.v2.services.AccountBudgetProposalServiceClient;
 import com.google.ads.googleads.v2.services.AccountBudgetProposalServiceSettings;
 import com.google.ads.googleads.v2.services.AccountBudgetServiceClient;
@@ -218,21 +217,36 @@ import com.google.ads.googleads.v2.services.VideoServiceSettings;
 import com.google.api.gax.core.FixedCredentialsProvider;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.Credentials;
+import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.lang.Override;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
-public class NoReflectionApiCatalog extends ApiCatalogImpl {
-  private static ApiCatalog instance = new NoReflectionApiCatalog();
-
+public class NoReflectionApiCatalog implements ApiCatalog {
+  private static ApiCatalog instance =
+      new NoReflectionApiCatalog(VersionDescriptorLoader
+          .forVersionList(GoogleAdsAllVersions.class).getVersions());
+  private final ImmutableSortedSet<Version> supportedVersions;
   /**
    * Creates a new constant catalog from a known collection of versions */
-  public NoReflectionApiCatalog() {
-    super(Arrays.asList(new Version("v999", new GoogleAdsException.Factory(), GoogleAdsVersion.class)));
+  public NoReflectionApiCatalog(Collection<Version> versions) {
+    supportedVersions = ImmutableSortedSet.copyOf(new TreeSet<>(versions));
   }
 
   public static ApiCatalog getDefault() {
     return instance;
+  }
+
+  @Override
+  public SortedSet<Version> getSupportedVersions() {
+    return supportedVersions;
+  }
+
+  @Override
+  public Version getLatestVersion() {
+    return getSupportedVersions().first();
   }
 
   @Override

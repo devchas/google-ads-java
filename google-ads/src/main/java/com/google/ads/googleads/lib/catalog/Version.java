@@ -14,6 +14,7 @@
 
 package com.google.ads.googleads.lib.catalog;
 
+import com.google.ads.googleads.annotations.ReqClassFactory;
 import com.google.ads.googleads.lib.BaseGoogleAdsException;
 import com.google.ads.googleads.lib.catalog.annotation.VersionDescriptor;
 import com.google.common.base.Preconditions;
@@ -23,6 +24,10 @@ import java.util.Objects;
  * Represents the metadata of a version of the Google Ads API. Provides a TypeFactory instance which
  * can be used to create API object instances in a version independent context.
  */
+@ReqClassFactory(
+    id = "Version",
+    type = Version.class
+)
 public final class Version implements Comparable<Version> {
 
   /** A class which enumerates the service clients available for this Version. */

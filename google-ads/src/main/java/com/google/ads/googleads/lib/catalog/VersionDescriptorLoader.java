@@ -14,6 +14,7 @@
 
 package com.google.ads.googleads.lib.catalog;
 
+import com.google.ads.googleads.annotations.ReqClassFactory;
 import com.google.ads.googleads.lib.catalog.annotation.VersionDescriptor;
 import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.Method;
@@ -40,6 +41,10 @@ import java.lang.reflect.Method;
  * </code>
  * </pre>
  */
+@ReqClassFactory(
+    id = "VersionDescriptorLoader",
+    type = VersionDescriptorLoader.class
+)
 class VersionDescriptorLoader {
 
   private final ImmutableSet<Version> versions;

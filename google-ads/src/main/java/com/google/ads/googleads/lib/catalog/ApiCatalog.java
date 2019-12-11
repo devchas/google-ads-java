@@ -14,6 +14,7 @@
 
 package com.google.ads.googleads.lib.catalog;
 
+import com.google.ads.googleads.annotations.ReqClassFactory;
 import com.google.ads.googleads.lib.GoogleAdsAllVersions;
 import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.auth.Credentials;
@@ -25,11 +26,15 @@ import java.util.SortedSet;
  * <p>Note: This is *not* intended to be the external interface for accessing API versions. If you
  * are looking for that, please see the GoogleAdsAllVersions interface provided by GoogleAdsClient.
  */
+@ReqClassFactory(
+    id = "ApiCatalog",
+    type = ApiCatalog.class
+)
 public interface ApiCatalog {
 
   /** Returns a ApiCatalog implementation which reflects the current state of the library. */
   static ApiCatalog getDefault() {
-    return ApiCatalogImpl.getDefault();
+    return NoReflectionApiCatalog.getDefault();
   }
 
   /** Returns all API versions available in the current catalog. */
