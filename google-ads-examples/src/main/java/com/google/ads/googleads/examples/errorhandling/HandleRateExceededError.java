@@ -182,7 +182,7 @@ public class HandleRateExceededError {
         AdGroupCriterion criterion =
             AdGroupCriterion.newBuilder()
                 .setAdGroup(StringValue.of(adGroupResourceName))
-                .setStatus(AdGroupCriterionStatus.ENABLED)
+                .setStatus(AdGroupCriterionStatus.PAUSED)
                 .setKeyword(keywordInfo)
                 .build();
 
